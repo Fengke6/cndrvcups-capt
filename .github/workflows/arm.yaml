@@ -1,4 +1,4 @@
-name: Build Canon LBP2900 Driver for ARM
+name: Build ARM Driver
 
 on:
   workflow_dispatch:  # 启用手动触发
@@ -15,6 +15,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. 打印 Hello World
-      - name: Run a simple script
-        run: echo "Hello, World!"
+      # 2. 设置 ARM 交叉编译环境
+      - name: Set up ARM cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git libcups2-dev gcc-arm-linux-gnueabihf
+
+      # 3. 下载驱动源码（如果源码不在仓库中）
+      - name: Download driver source code
+        run: |
+          wget -O lbp2900-driver.tar.gz https://example.com/path/to/driver/source.tar.gz  # 替换为实际的驱动源码下载链接
+          tar -xzf lbp2900-driver.tar.gz
+          rm lbp2900-driver.tar.gz
+
+      # 4. 进入驱动源码目录并编译
+      - name: Build driver for ARM
+        run: |
+          cd path/to/driver/source  # 替换为驱动源码解压后的目录
+          make CC=arm-linux-gnueabihf-gcc  # 使用 ARM 交叉编译器
+
+      # 5. 打包编译结果
+      - name: Package build artifacts
+        run: |
+          mkdir -p output
+          cp path/to/driver/source/binary-file output
