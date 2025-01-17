@@ -16,7 +16,8 @@ jobs:
       - name: Set up Docker
         run: |
           sudo apt update
-          sudo apt install -y docker.io
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
 
       # 3. 使用 Docker 构建 ARM 环境并编译驱动
       - name: Build cndrvcups-capt in Docker
