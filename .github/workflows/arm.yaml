@@ -33,4 +33,16 @@ jobs:
           RUN make
           EOF
 
-      # 
+      # 4. 提取编译结果
+      - name: Extract build artifacts
+        run: |
+          mkdir -p artifacts
+          sudo docker run --rm -v $(pwd)/artifacts:/output cndrvcups-capt-builder bash -c "cp -r /workspace/cndrvcups-capt/* /output/"
+          tar -czvf cndrvcups-capt-arm-build.tar.gz artifacts
+
+      # 5. 上传编译结果
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: cndrvcups-capt-arm-build
+          path: cndrvcups-capt-arm-build.tar.gz
