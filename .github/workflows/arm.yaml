@@ -1,4 +1,4 @@
-name: Docker Build cndrvcups-capt for ARM
+name: Docker Buildx cndrvcups-capt for ARM
 
 on:
   workflow_dispatch:  # 允许手动触发工作流
@@ -12,29 +12,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. 设置 Docker 环境并启用多架构支持
-      - name: Set up Docker with multi-arch support
+      # 2. 设置 Docker 环境并启用 Buildx
+      - name: Set up Docker with Buildx
         run: |
           sudo apt update
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
           sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          sudo docker buildx create --use
 
-      # 3. 使用 Docker 构建 ARM 环境并编译驱动
-      - name: Build cndrvcups-capt in Docker
+      # 3. 使用 Docker Buildx 构建 ARM 环境并编译驱动
+      - name: Build cndrvcups-capt with Docker Buildx
         run: |
-          docker run --rm -v $(pwd):/workspace -w /workspace arm32v7/ubuntu:20.04 bash -c "
-            apt update &&
-            apt install -y build-essential libcups2-dev libxml2-dev &&
-            cd cndrvcups-capt &&
-            make
-          "
+          sudo docker buildx build --platform linux/arm/v8 -t cndrvcups-capt-builder -f - . <<EOF
+          FROM arm64v8/ubuntu:20.04
+          RUN apt update && apt install -y build-essential libcups2-dev libxml2-dev
+          COPY . /workspace
+          WORKDIR /workspace/cndrvcups-capt
+          RUN make
+          EOF
 
-      # 4. 打包编译结果
-      - name: Package build artifacts
+      # 4. 提取编译结果
+      - name: Extract build artifacts
         run: |
           mkdir -p artifacts
-          cp -r cndrvcups-capt/* artifacts/
+          sudo docker run --rm -v $(pwd)/artifacts:/output cndrvcups-capt-builder bash -c "cp -r /workspace/cndrvcups-capt/* /output/"
           tar -czvf cndrvcups-capt-arm-build.tar.gz artifacts
 
       # 5. 上传编译结果
