@@ -24,8 +24,8 @@ jobs:
       # 3. 使用 Docker Buildx 构建 ARM 环境并编译驱动
       - name: Build cndrvcups-capt with Docker Buildx
         run: |
-          sudo docker buildx build --platform linux/arm/v8 -t cndrvcups-capt-builder -f - . <<EOF
-          FROM arm64v8/ubuntu:20.04
+          sudo docker buildx build --platform linux/arm/v7 -t cndrvcups-capt-builder -f - . <<EOF
+          FROM arm32v7/ubuntu:20.04
           RUN apt update && apt install -y build-essential libcups2-dev libxml2-dev
           COPY . /workspace
           WORKDIR /workspace/cndrvcups-capt
